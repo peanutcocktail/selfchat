@@ -1,0 +1,7 @@
+{
+  "title": "Self Chat Phone",
+  "description": "Autonomous back-and-forth texting simulation powered by local Ollama models.",
+  "plugin": {
+    "menu": []
+  }
+}

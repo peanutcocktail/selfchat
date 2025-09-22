@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Self-Chat Phone</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --Alex: #2563eb;
+      --Blair: #e5e7eb;
+      --phone-bg: #f5f6fa;
+      --frame-border: rgba(255, 255, 255, 0.35);
+      --shadow: rgba(8, 12, 27, 0.55);
+      font-family: "SF Pro Text", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1f2a44 0%, #05070e 60%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .phone-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .phone {
+      position: relative;
+      width: 320px;
+      height: 640px;
+      border-radius: 36px;
+      background: var(--phone-bg);
+      border: 6px solid var(--frame-border);
+      box-shadow: 0 25px 45px var(--shadow);
+      padding: 18px 16px 28px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .notch {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 18px;
+      background: #0f172a;
+      border-radius: 10px;
+    }
+
+    .inner {
+      margin-top: 16px;
+      background: linear-gradient(180deg, #dde1f0 0%, #f9fafc 100%);
+      border-radius: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 16px;
+      overflow: hidden;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .dropdown {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+      color: #475569;
+      flex: 1 1 160px;
+      min-width: 0;
+    }
+
+    .dropdown label {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    select {
+      appearance: none;
+      border: 1px solid rgba(15, 23, 42, 0.15);
+      border-radius: 12px;
+      padding: 6px 10px;
+      font-size: 13px;
+      color: #111827;
+      background: rgba(255, 255, 255, 0.85);
+      font-weight: 500;
+      width: 100%;
+      max-width: 200px;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #0f172a;
+      font-weight: 600;
+      flex: 1 1 120px;
+      justify-content: flex-end;
+      min-width: 0;
+      text-align: right;
+    }
+
+    .pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+      animation: pulse 2.3s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+      }
+      70% {
+        box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+      }
+    }
+
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-right: 6px;
+    }
+
+    .message {
+      max-width: 78%;
+      padding: 10px 12px;
+      border-radius: 18px;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+      line-height: 1.38;
+      word-wrap: break-word;
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+      opacity: 0;
+      transform: translateY(16px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .message.from-alex {
+      align-self: flex-end;
+      background: var(--Alex);
+      color: #f8fafc;
+      border-bottom-right-radius: 6px;
+    }
+
+    .message.from-blair {
+      align-self: flex-start;
+      background: var(--Blair);
+      color: #111827;
+      border-bottom-left-radius: 6px;
+    }
+
+    .message.appear {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .chat::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .chat::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.6);
+      border-radius: 4px;
+    }
+
+    @media (max-width: 420px) {
+      body {
+        background: var(--phone-bg);
+      }
+      .phone {
+        width: min(100%, 360px);
+        height: 70vh;
+        border: none;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="inner">
+        <header>
+          <div class="dropdown">
+            <label for="model">Model</label>
+            <select id="model"></select>
+          </div>
+          <div class="status">
+            <span class="pulse" aria-hidden="true"></span>
+            <span id="status">Connecting…</span>
+          </div>
+        </header>
+        <main id="chat" class="chat" aria-live="polite"></main>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:11434";
+    const SPEAKERS = [
+      {
+        id: "alex",
+        name: "Alex",
+        persona: "You are Alex, an upbeat product designer texting with Blair. Keep replies grounded, curious, and supportive. Respond in one or two short text message style sentences with no speaker labels, no emojis, and no stage directions.",
+        opener: "I've been thinking about little moments of delight in apps today. What's been grabbing your attention lately?",
+      },
+      {
+        id: "blair",
+        name: "Blair",
+        persona: "You are Blair, a thoughtful AI researcher texting with Alex. Reply with calm, insightful observations. Keep it conversational, concise, and natural—one or two text message style sentences, no speaker labels, no emojis, and no stage directions.",
+      },
+    ];
+
+    const chatEl = document.getElementById("chat");
+    const statusEl = document.getElementById("status");
+    const modelSelectEl = document.getElementById("model");
+
+    let conversation = [];
+    let speakerIndex = 0;
+    let sessionToken = 0;
+
+    init();
+
+    async function init() {
+      try {
+        setStatus("Loading models…");
+        const models = await fetchModels();
+        populateModelSelect(models);
+        if (models.length === 0) {
+          setStatus("No Ollama models found");
+          return;
+        }
+        setStatus("Chatting");
+        startChat();
+      } catch (error) {
+        console.error(error);
+        setStatus("Unable to reach Ollama");
+      }
+    }
+
+    function populateModelSelect(models) {
+      modelSelectEl.innerHTML = "";
+      models.forEach((model, idx) => {
+        const option = document.createElement("option");
+        option.value = model;
+        option.textContent = model;
+        if (idx === 0) option.selected = true;
+        modelSelectEl.appendChild(option);
+      });
+      modelSelectEl.addEventListener("change", () => {
+        setStatus("Switching model…");
+        startChat();
+      });
+    }
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function startChat() {
+      sessionToken += 1;
+      const mySession = sessionToken;
+      conversation = [];
+      speakerIndex = 0;
+      chatEl.innerHTML = "";
+      requestAnimationFrame(() => chatEl.scrollTo({ top: chatEl.scrollHeight }));
+      setStatus("Chatting");
+      scheduleNextTurn(mySession, 800);
+    }
+
+    function scheduleNextTurn(token, delayMs) {
+      window.setTimeout(() => {
+        if (token !== sessionToken) return;
+        takeTurn(token);
+      }, delayMs + Math.random() * 600);
+    }
+
+    async function takeTurn(token) {
+      if (token !== sessionToken) return;
+      const speaker = SPEAKERS[speakerIndex];
+      const model = modelSelectEl.value;
+
+      try {
+        const prompt = buildPrompt(speaker);
+        const message = await generate(model, prompt);
+        if (token !== sessionToken) return;
+        pushMessage(speaker.id, message);
+        speakerIndex = (speakerIndex + 1) % SPEAKERS.length;
+        scheduleNextTurn(token, 1600);
+      } catch (error) {
+        console.error(error);
+        setStatus("Error — tap to retry");
+        showSystemMessage(error.message || "Failed to generate reply.");
+        chatEl.addEventListener(
+          "click",
+          function handler() {
+            chatEl.removeEventListener("click", handler);
+            setStatus("Chatting");
+            startChat();
+          },
+          { once: true }
+        );
+      }
+    }
+
+    function buildPrompt(speaker) {
+      const history = conversation
+        .slice(-20)
+        .map((entry) => {
+          const persona = SPEAKERS.find((s) => s.id === entry.speaker);
+          return `${persona ? persona.name : entry.speaker}: ${entry.text}`;
+        })
+        .join("\n");
+
+      if (!history) {
+        const cue = speaker.opener
+          ? `Start the conversation with a fresh variation inspired by: ${speaker.opener}`
+          : "Start the conversation naturally with a warm opener.";
+        return `${speaker.persona}\n\n${cue}\n${speaker.name}:`;
+      }
+
+      return `${speaker.persona}\n\nHere is the recent conversation between ${SPEAKERS[0].name} and ${SPEAKERS[1].name}:\n${history}\n\n${speaker.name}:`;
+    }
+
+    async function generate(model, prompt) {
+      const response = await fetch(`${API_BASE}/api/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          prompt,
+          stream: false,
+          options: {
+            temperature: 0.75,
+            top_p: 0.9,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Ollama returned status ${response.status}`);
+      }
+
+      const data = await response.json();
+      const message = (data.response || "").trim();
+      if (!message) {
+        throw new Error("Ollama produced an empty reply");
+      }
+      return message;
+    }
+
+    async function fetchModels() {
+      const response = await fetch(`${API_BASE}/api/tags`);
+      if (!response.ok) {
+        throw new Error(`Ollama returned status ${response.status}`);
+      }
+      const data = await response.json();
+      const models = Array.isArray(data.models)
+        ? data.models.map((entry) => entry.name).sort()
+        : [];
+      return models;
+    }
+
+    function pushMessage(speakerId, text) {
+      conversation.push({ speaker: speakerId, text });
+      const bubble = document.createElement("article");
+      bubble.className = `message from-${speakerId}`;
+      bubble.textContent = text;
+      chatEl.appendChild(bubble);
+      requestAnimationFrame(() => {
+        bubble.classList.add("appear");
+        chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: "smooth" });
+      });
+    }
+
+    function showSystemMessage(text) {
+      const bubble = document.createElement("article");
+      bubble.className = "message from-blair";
+      bubble.style.background = "rgba(148, 163, 184, 0.4)";
+      bubble.style.fontStyle = "italic";
+      bubble.textContent = text;
+      chatEl.appendChild(bubble);
+      requestAnimationFrame(() => {
+        bubble.classList.add("appear");
+        chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: "smooth" });
+      });
+    }
+  </script>
+</body>
+</html>
