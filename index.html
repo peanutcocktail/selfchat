@@ -251,13 +251,13 @@
       {
         id: "alex",
         name: "Alex",
-        persona: "You are Alex, an upbeat product designer texting with Blair. Keep replies grounded, curious, and supportive. Respond in one or two short text message style sentences with no speaker labels, no emojis, and no stage directions.",
-        opener: "I've been thinking about little moments of delight in apps today. What's been grabbing your attention lately?",
+        persona: "You are Alex, an upbeat product designer texting with Blair. Keep replies grounded and curious. Reply with a single short sentence without speaker labels, emojis, or stage directions.",
+        opener: "What tiny detail in an app delighted you today?",
       },
       {
         id: "blair",
         name: "Blair",
-        persona: "You are Blair, a thoughtful AI researcher texting with Alex. Reply with calm, insightful observations. Keep it conversational, concise, and natural—one or two text message style sentences, no speaker labels, no emojis, and no stage directions.",
+        persona: "You are Blair, a thoughtful AI researcher texting with Alex. Reply with calm insight in a single short sentence. No speaker labels, emojis, or stage directions.",
       },
     ];
 
@@ -373,12 +373,12 @@
 
       if (!history) {
         const cue = speaker.opener
-          ? `Start the conversation with a fresh variation inspired by: ${speaker.opener}`
-          : "Start the conversation naturally with a warm opener.";
-        return `${speaker.persona}\n\n${cue}\n${speaker.name}:`;
+          ? `Start the conversation with a fresh five-to-eight word variation on: ${speaker.opener}`
+          : "Start the conversation naturally with a warm opener of five-to-eight words.";
+        return `${speaker.persona}\n\n${cue}\nKeep replies under 12 words.\n${speaker.name}:`;
       }
 
-      return `${speaker.persona}\n\nHere is the recent conversation between ${SPEAKERS[0].name} and ${SPEAKERS[1].name}:\n${history}\n\n${speaker.name}:`;
+      return `${speaker.persona}\n\nHere is the recent conversation between ${SPEAKERS[0].name} and ${SPEAKERS[1].name}:\n${history}\n\nKeep your reply under 12 words.\n${speaker.name}:`;
     }
 
     async function generate(model, prompt) {
