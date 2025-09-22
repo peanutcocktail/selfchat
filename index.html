@@ -250,6 +250,11 @@
     let conversation = [];
     let speakerIndex = 0;
     let sessionToken = 0;
+    let audioCtx = null;
+    let audioReady = false;
+
+    window.addEventListener("pointerdown", enableAudio, { once: true });
+    window.addEventListener("keydown", enableAudio, { once: true });
 
     init();
 
@@ -403,6 +408,55 @@
         bubble.classList.add("appear");
         chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: "smooth" });
       });
+      playTone();
+    }
+
+    function playTone() {
+      if (!audioReady) return;
+      if (!audioCtx) {
+        try {
+          audioCtx = new window.AudioContext();
+        } catch (err) {
+          console.warn("AudioContext unsupported", err);
+          audioReady = false;
+          return;
+        }
+      }
+      const context = audioCtx;
+      const baseTime = context.currentTime + 0.01;
+      const sequence = [
+        { freq: 880, delay: 0, duration: 0.15 },
+        { freq: 1174.66, delay: 0.11, duration: 0.14 },
+        { freq: 1567.98, delay: 0.22, duration: 0.22 },
+      ];
+
+      sequence.forEach(({ freq, delay, duration }) => {
+        const start = baseTime + delay;
+        const end = start + duration;
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.08, start + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, end);
+        osc.connect(gain).connect(context.destination);
+        osc.start(start);
+        osc.stop(end + 0.05);
+      });
+    }
+
+    function enableAudio() {
+      try {
+        if (!audioCtx) {
+          audioCtx = new window.AudioContext();
+        }
+        audioCtx.resume().then(() => {
+          audioReady = true;
+        });
+      } catch (error) {
+        console.warn("Unable to start audio context", error);
+      }
     }
 
     function showSystemMessage(text) {
