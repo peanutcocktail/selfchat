@@ -61,3 +61,4 @@ curl http://localhost:11434/api/generate \
 ## Notes
 - Refresh the page if you want to clear the conversation manually.
 - If you see connection errors, confirm Ollama is running and accessible at `http://localhost:11434` with permissive CORS settings.
+- If Ollama is offline you'll see an in-app red banner reminding you to start `ollama serve`.

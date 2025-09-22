@@ -161,6 +161,7 @@
       letter-spacing: -0.01em;
       line-height: 1.38;
       word-wrap: break-word;
+      white-space: pre-wrap;
       box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
       opacity: 0;
       transform: translateY(16px);
@@ -179,6 +180,17 @@
       background: var(--Blair);
       color: #111827;
       border-bottom-left-radius: 6px;
+    }
+
+    .message.system {
+      align-self: center;
+      background: rgba(248, 113, 113, 0.12);
+      color: #b91c1c;
+      border: 1px solid rgba(248, 113, 113, 0.4);
+      border-radius: 14px;
+      font-weight: 600;
+      text-align: center;
+      max-width: 90%;
     }
 
     .message.appear {
@@ -253,6 +265,7 @@
     let sessionToken = 0;
     let audioCtx = null;
     let audioReady = false;
+    let ollamaWarned = false;
 
     window.addEventListener("pointerdown", enableAudio, { once: true });
     window.addEventListener("keydown", enableAudio, { once: true });
@@ -273,6 +286,7 @@
       } catch (error) {
         console.error(error);
         setStatus("Unable to reach Ollama");
+        notifyOllamaOffline(error?.message || "No response from Ollama");
       }
     }
 
@@ -300,6 +314,7 @@
       const mySession = sessionToken;
       conversation = [];
       speakerIndex = 0;
+      ollamaWarned = false;
       chatEl.innerHTML = "";
       requestAnimationFrame(() => chatEl.scrollTo({ top: chatEl.scrollHeight }));
       setStatus("Chatting");
@@ -328,7 +343,8 @@
       } catch (error) {
         console.error(error);
         setStatus("Error — tap to retry");
-        showSystemMessage(error.message || "Failed to generate reply.");
+        showSystemMessage(error?.message || "Failed to generate reply.");
+        notifyOllamaOffline(error?.message || "No response from Ollama");
         chatEl.addEventListener(
           "click",
           function handler() {
@@ -361,42 +377,52 @@
     }
 
     async function generate(model, prompt) {
-      const response = await fetch(`${API_BASE}/api/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model,
-          prompt,
-          stream: false,
-          options: {
-            temperature: 0.75,
-            top_p: 0.9,
-          },
-        }),
-      });
+      try {
+        const response = await fetch(`${API_BASE}/api/generate`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model,
+            prompt,
+            stream: false,
+            options: {
+              temperature: 0.75,
+              top_p: 0.9,
+            },
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error(`Ollama returned status ${response.status}`);
-      }
+        if (!response.ok) {
+          throw new Error(`Ollama returned status ${response.status}`);
+        }
 
-      const data = await response.json();
-      const message = (data.response || "").trim();
-      if (!message) {
-        throw new Error("Ollama produced an empty reply");
+        const data = await response.json();
+        const message = (data.response || "").trim();
+        if (!message) {
+          throw new Error("Ollama produced an empty reply");
+        }
+        return message;
+      } catch (error) {
+        notifyOllamaOffline(error?.message || "Unable to reach Ollama");
+        throw error;
       }
-      return message;
     }
 
     async function fetchModels() {
-      const response = await fetch(`${API_BASE}/api/tags`);
-      if (!response.ok) {
-        throw new Error(`Ollama returned status ${response.status}`);
+      try {
+        const response = await fetch(`${API_BASE}/api/tags`);
+        if (!response.ok) {
+          throw new Error(`Ollama returned status ${response.status}`);
+        }
+        const data = await response.json();
+        const models = Array.isArray(data.models)
+          ? data.models.map((entry) => entry.name).sort()
+          : [];
+        return models;
+      } catch (error) {
+        notifyOllamaOffline(error?.message || "Unable to reach Ollama");
+        throw error;
       }
-      const data = await response.json();
-      const models = Array.isArray(data.models)
-        ? data.models.map((entry) => entry.name).sort()
-        : [];
-      return models;
     }
 
     function pushMessage(speakerId, text) {
@@ -471,6 +497,26 @@
         bubble.classList.add("appear");
         chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: "smooth" });
       });
+    }
+
+    function showSystemNotification(text) {
+      const bubble = document.createElement("article");
+      bubble.className = "message system";
+      bubble.textContent = text;
+      chatEl.appendChild(bubble);
+      requestAnimationFrame(() => {
+        bubble.classList.add("appear");
+        chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: "smooth" });
+      });
+    }
+
+    function notifyOllamaOffline(detail) {
+      if (ollamaWarned) return;
+      ollamaWarned = true;
+      const message = detail ? `${detail}` : "Unable to reach Ollama";
+      showSystemNotification(
+        `Ollama is offline. Start it with "OLLAMA_ORIGINS=* ollama serve" and tap to retry. Details: ${message}`
+      );
     }
   </script>
 </body>
