@@ -11,7 +11,7 @@ A single-page phone-style chat that lets two virtual contacts carry on an autono
 2. Launch the app (Pinokio will serve `index.html`).
 3. Select a model from the dropdown and let the chat flow. Switching models resets the conversation with the new model instantly.
 
-The interface mimics a modern phone SMS app, complete with a live status indicator and message chime (enable audio by tapping/clicking once). The chat alternates between Alex and Blair with slight delays to keep timing natural.
+The interface mimics a modern phone SMS app, complete with a live status indicator and an iPhone-inspired tri-tone chime (tap/click once to unlock audio). The chat alternates between Alex and Blair with slight delays to keep timing natural.
 
 ## API Cheatsheet
 Use these endpoints on your local Ollama instance (`http://localhost:11434`).
