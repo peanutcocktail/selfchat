@@ -80,11 +80,9 @@
 
     header {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
       gap: 12px;
       margin-bottom: 12px;
-      flex-wrap: wrap;
     }
 
     .dropdown {
@@ -93,8 +91,7 @@
       gap: 4px;
       font-size: 13px;
       color: #475569;
-      flex: 1 1 160px;
-      min-width: 0;
+      width: 100%;
     }
 
     .dropdown label {
@@ -112,7 +109,6 @@
       background: rgba(255, 255, 255, 0.85);
       font-weight: 500;
       width: 100%;
-      max-width: 200px;
     }
 
     .status {
@@ -122,9 +118,8 @@
       font-size: 12px;
       color: #0f172a;
       font-weight: 600;
-      flex: 1 1 120px;
       justify-content: flex-end;
-      min-width: 0;
+      width: 100%;
       text-align: right;
     }
 
