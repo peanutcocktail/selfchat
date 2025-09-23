@@ -14,11 +14,13 @@ A single-page phone-style chat that lets two virtual contacts carry on an autono
 The interface mimics a modern phone SMS app, complete with a live status indicator and an iPhone-inspired tri-tone chime (tap/click once to unlock audio). Alex and Blair keep their replies to short, readable bursts so you can follow along in real time.
 
 ## API Cheatsheet
-Use these endpoints on your local Ollama instance (`http://localhost:11434`).
+Use these endpoints on your local Ollama instance. When the app is served over HTTPS, Ollama must be accessed at `https://11434.localhost`; otherwise use `http://localhost:11434`.
 
 ### JavaScript
 ```js
-const base = "http://localhost:11434";
+const base = window.location.protocol === "https:"
+  ? "https://11434.localhost"
+  : "http://localhost:11434";
 const models = await fetch(`${base}/api/tags`).then((r) => r.json());
 
 const reply = await fetch(`${base}/api/generate`, {
@@ -36,6 +38,7 @@ const reply = await fetch(`${base}/api/generate`, {
 ```python
 import requests
 
+# Swap to "https://11434.localhost" if your client must use HTTPS
 base = "http://localhost:11434"
 models = requests.get(f"{base}/api/tags").json()
 
@@ -49,6 +52,7 @@ reply = requests.post(f"{base}/api/generate", json=payload).json()
 
 ### curl
 ```bash
+# Swap to https://11434.localhost when calling from an HTTPS-only context
 curl http://localhost:11434/api/generate \
   -H 'Content-Type: application/json' \
   -d '{
@@ -60,5 +64,5 @@ curl http://localhost:11434/api/generate \
 
 ## Notes
 - Refresh the page if you want to clear the conversation manually.
-- If you see connection errors, confirm Ollama is running and accessible at `http://localhost:11434` with permissive CORS settings.
+- If you see connection errors, confirm Ollama is running and accessible at `http://localhost:11434` (or `https://11434.localhost` when browsed over HTTPS) with permissive CORS settings.
 - If Ollama is offline you'll see an in-app red banner reminding you to start `ollama serve`.
